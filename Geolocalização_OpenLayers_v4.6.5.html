@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Geolocation</title>
+    <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="https://openlayers.org/en/v4.6.5/build/ol.js"></script>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+    <div id="info" style="display: none;"></div>
+
+	<br/>
+	<button onclick="myFunction()">Iniciar</button>
+	<p id="demo"></p>
+
+    <script>
+      var view = new ol.View({
+        center: [-5151593, -2703595],
+        zoom: 15,
+
+      });
+
+      var map = new ol.Map({
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          })
+        ],
+        target: 'map',
+        controls: ol.control.defaults({
+          attributionOptions: {
+            collapsible: false
+          }
+        }),
+        view: view
+      });
+
+      var geolocation = new ol.Geolocation({
+        projection: view.getProjection()
+      });
+
+      function el(id) {
+        return document.getElementById(id);
+      }
+
+      // handle geolocation error.
+      geolocation.on('error', function(error) {
+        var info = document.getElementById('info');
+        info.innerHTML = error.message;
+        info.style.display = '';
+      });
+
+      var accuracyFeature = new ol.Feature();
+      geolocation.on('change:accuracyGeometry', function() {
+        accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
+      });
+
+      var positionFeature = new ol.Feature();
+      positionFeature.setStyle(new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 6,
+          fill: new ol.style.Fill({
+            color: '#3399CC'
+          }),
+          stroke: new ol.style.Stroke({
+            color: '#fff',
+            width: 2
+          })
+        })
+      }));
+
+
+
+      new ol.layer.Vector({
+        map: map,
+        source: new ol.source.Vector({
+          features: [accuracyFeature, positionFeature]
+        })
+      });
+	  
+	  
+	  function myFunction() {
+	  
+		var coordinates;
+		var x = -5151593;
+		var y = -2703595;			  
+		var somador = 1;
+		
+		setInterval(function(){ 
+		somador++;
+	
+			x = x + somador;
+			y = y + somador;
+			
+			coordinates =  [x, y];
+			map.getView().setCenter(coordinates);
+			positionFeature.setGeometry(coordinates ?
+			new ol.geom.Point(coordinates) : null);
+	
+	
+		}, 3000); // executa a cada 3 segundos
+		  
+}
+    </script>
+  </body>
+</html>
